@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     public static PlayerController _Instance;
     public float speed;
+    public float boundsForce;
 
     private void Awake()
     {

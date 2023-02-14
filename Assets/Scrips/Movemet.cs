@@ -5,16 +5,29 @@ using UnityEngine;
 
 public class Movemet : MonoBehaviour
 {
-    private float horizontal = 0;
-    private float vertical = 0;
-    private Vector3 dir;
+    public static Movemet _Instance;
+    public float horizontal = 0;
+    public float vertical = 0;
+    public bool jump;
     private Rigidbody rigi; 
-    public float speed;
+    private float speed;
+    private float boundsForce;
 
+    private bool isGround = true;
+
+
+    private void Awake()
+    {
+        if (_Instance == null)
+        {
+            _Instance = this;
+        }
+    }
     // Start is called before the first frame update
     void Start()
     {
         rigi = transform.parent.GetComponent<Rigidbody>();
+        speed = PlayerController._Instance.speed;
     }
 
     private void FixedUpdate()
@@ -24,13 +37,22 @@ public class Movemet : MonoBehaviour
 
     private void _MakeMove()
     {
-        dir = new Vector3(vertical, 0f, -1 * horizontal);
-        if(dir.magnitude >= 1)
+        if (vertical < 0)
         {
-
-            rigi.AddForce(dir * speed);
+            rigi.AddForce(Vector3.back * speed * Time.fixedDeltaTime);
+        }else if(vertical > 0)
+        {
+            rigi.AddForce(Vector3.forward * speed * Time.fixedDeltaTime);
         }
+    }
 
+
+    void _Jump()
+    {
+        if(isGround && jump)
+        {
+            rigi.AddForce(Vector3.up * boundsForce * Time.fixedDeltaTime);
+        }
     }
 
     // Update is called once per frame
@@ -43,5 +65,28 @@ public class Movemet : MonoBehaviour
     {
         horizontal = Input.GetAxisRaw("Horizontal");
         vertical = Input.GetAxisRaw("Vertical");
+        jump = Input.GetKeyDown(KeyCode.Space);
+
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if(collision.gameObject.tag == "ground")
+        {
+            isGround = true;
+        }
+
+        if(collision.gameObject.tag == "wall")
+        {
+            //death
+        }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision.gameObject.tag == "ground")
+        {
+            isGround = false;
+        }
     }
 }
