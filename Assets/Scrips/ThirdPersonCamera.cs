@@ -1,52 +1,31 @@
-using System.Collections;
+using System;
+    using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class ThirdPersonCamera : MonoBehaviour
 {
-    public static ThirdPersonCamera _Instance;
-
     private Transform player;
     public float distance;
-    private float smoothTime = 0.25f;
-    private Vector3 currentVelocity;
-    Vector3 offer = new Vector3(0, 5, -2);
-
-    private void Awake()
-    {
-        if(_Instance == null)
-        {
-            _Instance = this;
-        }
-    }
+    private float smoothTime = 100f;
+    public Vector3 offer;
     // Start is called before the first frame update
     void Start()
     {
-        //transform.rotation = Quaternion.Euler(36f, 90f, 0);
-        player = PlayerController._Instance.transform;
+
+        player = Player._Instance.transform;
+        transform.position = player.position + offer;
     }
-
-
-
     private void LateUpdate()
     {
-        Vector3 target = player.position + (transform.position - player.position).normalized * distance;
-        if (target.y < 10)
-        {
-            target.y = 10;
-        }
-
-        transform.position = Vector3.SmoothDamp(transform.position, target, ref currentVelocity, smoothTime);
-        transform.LookAt(player);
+        _FollowPlayer();
     }
 
-    private void _Rotation()
+    private void _FollowPlayer()
     {
-        float horizontal = Movemet._Instance.horizontal;
-
-        if(horizontal > 0)
-        {
-
-        }
+        this.transform.position = player.position + (transform.position - player.position).normalized * distance;
+        
+        Quaternion rotationTarget = Quaternion.LookRotation(transform.position - player.position);
+        this.transform.rotation = Quaternion.RotateTowards(this.transform.rotation, rotationTarget, smoothTime * Time.deltaTime);
     }
 }
