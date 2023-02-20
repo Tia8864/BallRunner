@@ -5,16 +5,17 @@ using UnityEngine;
 
 public class ThirdPersonCamera : MonoBehaviour
 {
-    private Transform player;
-    public float distance;
-    private float smoothTime = 100f;
-    public Vector3 offer;
+    [SerializeField]
+    private float distance, min, max;
+    [SerializeField]
+    private Vector3 offset;
+    private RaycastHit hit;
     // Start is called before the first frame update
     void Start()
     {
+        this.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
 
-        player = Player._Instance.transform;
-        transform.position = player.position + offer;
+        transform.position += offset;
     }
     private void LateUpdate()
     {
@@ -23,9 +24,27 @@ public class ThirdPersonCamera : MonoBehaviour
 
     private void _FollowPlayer()
     {
-        this.transform.position = player.position + (transform.position - player.position).normalized * distance;
-        
-        Quaternion rotationTarget = Quaternion.LookRotation(transform.position - player.position);
-        this.transform.rotation = Quaternion.RotateTowards(this.transform.rotation, rotationTarget, smoothTime * Time.deltaTime);
+
+        Vector3 target = Vector3.zero ;
+
+        if(Physics.Linecast(PlayerController._Instance.transform.position, transform.position, out hit))
+        {
+            distance = hit.point.magnitude;
+        }
+        else
+        {
+            distance = offset.magnitude;
+        }
+        distance = Mathf.Clamp(this.transform.rotation.z, min, max);
+        target = new Vector3(
+            distance * Mathf.Cos(PlayerController._Instance.curAngle * Mathf.Deg2Rad - Mathf.PI / 2f),
+            offset.y,
+            distance * Mathf.Sin(PlayerController._Instance.curAngle * Mathf.Deg2Rad - Mathf.PI / 2f)
+        );
+        this.transform.position = Vector3.Lerp(
+            this.transform.position,
+            PlayerController._Instance.transform.position + target, 
+            Time.deltaTime);
+        transform.LookAt(PlayerController._Instance.transform.position);
     }
 }
