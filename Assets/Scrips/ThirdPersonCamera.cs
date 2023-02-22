@@ -14,7 +14,7 @@ public class ThirdPersonCamera : MonoBehaviour
     void Start()
     {
         this.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-
+        
         transform.position += offset;
     }
     private void LateUpdate()

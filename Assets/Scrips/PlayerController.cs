@@ -6,20 +6,16 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public static PlayerController _Instance;
-    [SerializeField]
-    private float speed;
+    public float speed;
     private Rigidbody rigidbody;
     private float vertical = 0, horizontal = 0, angleRoration = 2f;
     private Vector3 curVector;
     private Vector3 curRotation;
     public float curAngle = 0;
     private bool isOnGround = true;
-    [SerializeField]
     private float boundForce;
-    private float ySpeed;
-    private float timeBuff = 2f;
 
-
+    public bool flagDeath = false, flagWin = false, flagSpeedUP = false;
     private void Awake()
     {
         if (_Instance == null)
@@ -34,9 +30,15 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        flagDeath = false;
+        flagWin = false;
+        flagSpeedUP = false;
+        speed = GameController._Instance.speed;
+        boundForce = GameController._Instance.forceJump;
         rigidbody = this.GetComponent<Rigidbody>();
         curVector = new Vector3(0, 0, 1);
         this.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+        
     }
 
     // Update is called once per frame
@@ -45,8 +47,6 @@ public class PlayerController : MonoBehaviour
         vertical = Input.GetAxisRaw("Vertical");
         horizontal = Input.GetAxisRaw("Horizontal");
         _Rotation();
-
-
     }
 
     private void _Rotation()
@@ -69,19 +69,24 @@ public class PlayerController : MonoBehaviour
                 0,
                 Mathf.Sin(curAngle * Mathf.Deg2Rad + Mathf.PI / 2));
         }
+
     }
 
     private void FixedUpdate()
     {
-        Vector3 jump = new Vector3(0, 20f, 0);
+        Vector3 jump = new Vector3(0, 50f, 0);
         _Movement();
-        ySpeed = 10* Physics.gravity.y * Time.deltaTime;
         if (isOnGround)
         {
-            ySpeed = -.5f;
             if (Input.GetButtonDown("Jump"))
             {
                 rigidbody.AddForce(jump * boundForce * Time.fixedDeltaTime, ForceMode.Impulse);
+                /*if (Input.GetAxisRaw("Vertical") != 0 || Input.GetAxisRaw("Horizontal") != 0) return;
+                if (Input.GetKeyDown(KeyCode.A) ||
+                    Input.GetKeyDown(KeyCode.S) ||
+                    Input.GetKeyDown(KeyCode.D) ||
+                    Input.GetKeyDown(KeyCode.W)
+                    ) return;*/
             }
         }
         
@@ -103,7 +108,6 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        Debug.Log("collision :" + collision.gameObject.name);
         if (collision.gameObject.tag == "ground")
         {
             isOnGround = true;
@@ -111,6 +115,7 @@ public class PlayerController : MonoBehaviour
         if(collision.gameObject.tag == "wall")
         {
             //death
+            flagDeath = true;
         }
     }
 
@@ -126,12 +131,26 @@ public class PlayerController : MonoBehaviour
     {
         if (other.gameObject.CompareTag("target"))
         {
-            //goat
+            //goal
+
+            flagWin = true;
         }
 
         if (other.gameObject.CompareTag("speedUp"))
         {
             //x2 speed
+            flagSpeedUP = true;
         }
     }
+    public void _ResetGame()
+    {
+        flagDeath = false;
+        flagWin = false;
+        flagSpeedUP = false;
+        curVector = new Vector3(0, 0, 1);
+        this.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+        curAngle = 0;
+        isOnGround = true;
+        rigidbody.velocity = Vector3.zero; 
+}
 }
