@@ -33,7 +33,6 @@ public class UIController : MonoBehaviour
             isEnd = true;
             isHighScore = true;
             _Show();
-            _ShowPopUp();
             PlayerController._Instance.flagDeath = false;
         }
 
