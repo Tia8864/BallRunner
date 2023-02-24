@@ -1,13 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
+using System.Linq;
 public class UIController : MonoBehaviour
 {
     public static UIController _Instance;
     [SerializeField] GameObject startUI, inGameUI, pauseUI, endUI, highScoreUI;
     public bool isStart, isInGame, isPause, isEnd, isHighScore;
-
+    public Animator animator;
     private void Awake()
     {
         if (_Instance == null) _Instance = this;
@@ -23,6 +24,48 @@ public class UIController : MonoBehaviour
         isHighScore = false;
         _Show();
     }
+
+    private void Update()
+    {
+        if (PlayerController._Instance.flagDeath)
+        {
+            isInGame = false;
+            isEnd = true;
+            isHighScore = true;
+            _Show();
+            _ShowPopUp();
+            PlayerController._Instance.flagDeath = false;
+        }
+
+        if (PlayerController._Instance.flagWin)
+        {
+            isInGame = false;
+            isEnd = true;
+            isHighScore = true;
+            Time.timeScale = 0;
+            _Show();
+            _ShowPopUp();
+            PlayerController._Instance.flagWin = false;
+            //so sanh diem o day
+        }
+
+        //resolver show popup
+        //1st get 
+    }
+    private void _ShowPopUp()
+    {
+        var ketqua = from ItemScore in LoadAndSaveHS._Instance._listItem
+                     orderby ItemScore.score descending //sort item by score
+                     select ItemScore;
+
+        
+        if (GameController._Instance.score > ketqua.Last().score)
+        {
+            animator.SetTrigger("visible");
+            animator.SetBool("isOpen", true);
+        }
+    }
+
     private void _Show()
     {
         startUI.SetActive(isStart);
@@ -32,12 +75,16 @@ public class UIController : MonoBehaviour
         highScoreUI.SetActive(isHighScore);
     }
 
+
     //startUI
     public void _btnStart()
     {
         isStart = false;
         isInGame = true;
         isEnd = false;
+        Time.timeScale = 1;
+        GameController._Instance._ReSetTime();
+        PlayerController._Instance._ResetGame();
         _Show();
     }
     public void _btnHghScore()
@@ -50,6 +97,7 @@ public class UIController : MonoBehaviour
     public void _btnExit()
     {
         //exit apllication
+        Application.Quit();
     }
     //inGameUI
     public void _btnPause()
@@ -82,8 +130,12 @@ public class UIController : MonoBehaviour
         isPause = false;
         isStart = true;
         Time.timeScale = 1;
+        GameController._Instance.startingTime = 120;
+
         _Show();
     }
 
-    
+   //de show popup newName can so sanh diem giua
+   //LisItem.itemScoreList[0..5] ? nesu dungs thif show ko thif hide
+
 }

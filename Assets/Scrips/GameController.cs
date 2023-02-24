@@ -19,8 +19,9 @@ public class GameController : MonoBehaviour
 
     [Header("UI Setting")]
     public bool pause = false;
-    [SerializeField] private TextMeshProUGUI txtTimer, txtEndGame, txtScore;
-    private float score=0;
+    [SerializeField] private TextMeshProUGUI txtTimer, txtEndGame, txtScore, txtScore2;
+    public int score = 0;
+
 
     
     private void Awake()
@@ -34,13 +35,9 @@ public class GameController : MonoBehaviour
             Destroy(this.gameObject);
         }
     }
-    // Start is called before the first frame update
-    void Start()
-    {
-        _Being(startingTime);
-    }
 
-    void _Being(int timedown)
+
+    public void _Being(int timedown)
     {
         currentTime = timedown;
         StartCoroutine(_UpdateTimer());
@@ -49,6 +46,7 @@ public class GameController : MonoBehaviour
     private IEnumerator _UpdateTimer()
     {
         string textTime;
+        score = startingTime * 10;
         while(currentTime >= 0)
         {
             if (!pause)
@@ -64,15 +62,20 @@ public class GameController : MonoBehaviour
     }
     //reference : https://www.youtube.com/watch?v=2gPHkaPGbpI
 
+    public void _ReSetTime()
+    {
+         _Being(startingTime);
+    }
     private void Update()
     {
-        score = (startingTime - currentTime) * 10;
         if (PlayerController._Instance.flagWin)
         {
             UIController._Instance.isEnd = true;
             txtEndGame.text = "You win";
             txtScore.text = "Your score: " + score;
-            PlayerController._Instance.flagWin = false;
+            txtScore2.text = "Your score: " + score;
+            /*Time.timeScale = 0;*/
+            /*PlayerController._Instance.flagWin = false;*/
         }
 
         if (PlayerController._Instance.flagDeath || currentTime < 0)
@@ -80,7 +83,8 @@ public class GameController : MonoBehaviour
             UIController._Instance.isEnd = true;
             txtEndGame.text = "Game Over";
             txtScore.text = "Your score: " + score;
-            PlayerController._Instance.flagDeath = false;
+            /*Time.timeScale = 0;*/
+/*            PlayerController._Instance.flagDeath = false;*/
         }
 
         if (PlayerController._Instance.flagSpeedUP)
@@ -88,7 +92,12 @@ public class GameController : MonoBehaviour
             float temp = multipleSpeed * speed;
             PlayerController._Instance.speed = temp;
             StartCoroutine(_SpeedDown(multipleSpeed));
-            PlayerController._Instance.flagSpeedUP = false;
+            /*PlayerController._Instance.flagSpeedUP = false;*/
+        }
+
+        if(!PlayerController._Instance.flagDeath && !PlayerController._Instance.flagWin && currentTime >= 0)
+        {
+            score = currentTime * 10; 
         }
     }
     private IEnumerator _SpeedDown(float multipleSpeed)

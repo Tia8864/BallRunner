@@ -46,7 +46,6 @@ public class PlayerController : MonoBehaviour
     {
         vertical = Input.GetAxisRaw("Vertical");
         horizontal = Input.GetAxisRaw("Horizontal");
-        _Rotation();
     }
 
     private void _Rotation()
@@ -74,19 +73,13 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Vector3 jump = new Vector3(0, 50f, 0);
         _Movement();
+        _Rotation();
         if (isOnGround)
         {
             if (Input.GetButtonDown("Jump"))
             {
-                rigidbody.AddForce(jump * boundForce * Time.fixedDeltaTime, ForceMode.Impulse);
-                /*if (Input.GetAxisRaw("Vertical") != 0 || Input.GetAxisRaw("Horizontal") != 0) return;
-                if (Input.GetKeyDown(KeyCode.A) ||
-                    Input.GetKeyDown(KeyCode.S) ||
-                    Input.GetKeyDown(KeyCode.D) ||
-                    Input.GetKeyDown(KeyCode.W)
-                    ) return;*/
+                rigidbody.AddForce(Vector3.up * boundForce, ForceMode.Impulse);
             }
         }
         
@@ -96,25 +89,26 @@ public class PlayerController : MonoBehaviour
     {
         if (vertical > 0)
         {
-            //rigidbody.AddForce(curVector * speed * Time.fixedDeltaTime);
-            rigidbody.velocity = curVector * speed * Time.fixedDeltaTime;
+            rigidbody.AddForce(curVector * speed);
         }
         else if (vertical < 0)
         {
-            //rigidbody.AddForce( - curVector * speed * Time.fixedDeltaTime);
-            rigidbody.velocity = -1 * curVector * speed * Time.fixedDeltaTime;
+            rigidbody.AddForce( - curVector * speed);
         }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
+
+        Debug.Log("collision: " + collision.gameObject.name);
         if (collision.gameObject.tag == "ground")
         {
             isOnGround = true;
         }
-        if(collision.gameObject.tag == "wall")
+        if(collision.gameObject.CompareTag("wall"))
         {
             //death
+            Debug.Log("wall is block");
             flagDeath = true;
         }
     }
@@ -129,10 +123,9 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log("collider: " + other.gameObject.name);
         if (other.gameObject.CompareTag("target"))
         {
-            //goal
-
             flagWin = true;
         }
 
@@ -151,6 +144,6 @@ public class PlayerController : MonoBehaviour
         this.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
         curAngle = 0;
         isOnGround = true;
-        rigidbody.velocity = Vector3.zero; 
-}
+        rigidbody.velocity = Vector3.zero;
+    }
 }
